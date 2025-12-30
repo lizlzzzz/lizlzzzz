@@ -1,7 +1,6 @@
 import feedparser
 import requests
 import os
-import hashlib
 from openai import OpenAI
 
 
@@ -23,15 +22,16 @@ latest = feed.entries[0]
 
 content = latest.title
 link = latest.link
-hash_now = hashlib.md5(content.encode()).hexdigest()
 
 if os.path.exists("last.txt"):
     with open("last.txt") as f:
-        if f.read() == hash_now:
+        last_link = f.read().strip()
+        if last_link == link:
+            print("Same tweet, skip")
             exit(0)
 
 with open("last.txt", "w") as f:
-    f.write(hash_now)
+    f.write(link)
 
 def analyze(tweet):
     prompt = f"""

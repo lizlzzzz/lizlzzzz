@@ -2,7 +2,7 @@ import feedparser
 import requests
 import os
 import hashlib
-import openai
+from openai import OpenAI
 
 
 RSS_URL = os.getenv("RSS_URL")

@@ -7,6 +7,7 @@ from openai import OpenAI
 RSS_URL = os.getenv("RSS_URL")
 BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 CHAT_ID = os.getenv("TG_CHAT_ID")
+WECOM_WEBHOOK = os.getenv("WECOM_WEBHOOK")
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
     base_url="https://api.deepseek.com"
@@ -22,6 +23,13 @@ latest = feed.entries[0]
 
 content = latest.title
 link = latest.link
+
+def send_wecom(msg):
+    if not WECOM_WEBHOOK:
+        return
+    requests.post(url, json={
+        "msgtype": "text",
+        "text": {"content": msg}})
 
 if os.path.exists("last.txt"):
     with open("last.txt") as f:
@@ -42,6 +50,9 @@ def analyze(tweet):
 2. 是否包含潜在信号（是/否 + 理由）
 3. 可能影响的公司或资产
 4. 关注度（高 / 中 / 低）
+
+要求：
+1. 不要使用Markdown格式，文本输出即可
 
 推文内容：
 {tweet}
@@ -71,4 +82,7 @@ msg = f"""
 {link}
 """
 
+
 send(msg)
+send_wecom(msg)
+

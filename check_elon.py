@@ -27,7 +27,7 @@ link = latest.link
 def send_wecom(msg):
     if not WECOM_WEBHOOK:
         return
-    requests.post(url, json={
+    requests.post(WECOM_WEBHOOK, json={
         "msgtype": "text",
         "text": {"content": msg}})
 

@@ -1,9 +1,8 @@
-- 👋 Hi, I’m @lizlzzzz
-- 👀 I’m interested in Statistics
-- 🌱 I’m currently learning Statistics
-- 📫 How to reach me: zzhligm@gmail.com
+# Elon Watcher
 
-<!---
-lizlzzzz/lizlzzzz is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+A simple GitHub Actions bot that monitors Elon Musk’s X posts via RSS,
+analyzes new tweets with AI, and sends alerts to Telegram.
+
+- Runs every 5 minutes
+- Uses tweet link for deduplication
+- No X API required

@@ -9,7 +9,7 @@ RSS_URL = os.getenv("RSS_URL")
 BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 CHAT_ID = os.getenv("TG_CHAT_ID")
 client = OpenAI(
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    api_key=os.getenv("OPENAI_API_KEY"),
     base_url="https://api.deepseek.com"
 )
 

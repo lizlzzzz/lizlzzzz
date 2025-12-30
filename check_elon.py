@@ -8,7 +8,10 @@ import openai
 RSS_URL = os.getenv("RSS_URL")
 BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 CHAT_ID = os.getenv("TG_CHAT_ID")
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url="https://api.deepseek.com"
+)
 
 
 def send(msg):
@@ -34,23 +37,26 @@ def analyze(tweet):
     prompt = f"""
 你是专门分析 Elon Musk 推文的情报分析 AI。
 
-请输出以下结构化内容：
-- 推文类型（情绪 / 产品 / 市场 / 政治 / 玩笑）
-- 是否包含潜在信号（是/否 + 理由）
-- 可能影响的公司或资产
-- 关注度（高 / 中 / 低）
+请输出：
+1. 推文类型（情绪 / 产品 / 市场 / 政治 / 玩笑）
+2. 是否包含潜在信号（是/否 + 理由）
+3. 可能影响的公司或资产
+4. 关注度（高 / 中 / 低）
 
 推文内容：
 {tweet}
 """
 
-    resp = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
+    resp = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
         temperature=0.2
     )
 
     return resp.choices[0].message.content.strip()
+    
 
 analysis = analyze(content)
 

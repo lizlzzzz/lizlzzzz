@@ -10,14 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
       - run: pip install feedparser requests openai
-      - run: python check_elon.py
+
+      - name: Run watcher
+        run: python check_elon.py
         env:
           RSS_URL: ${{ secrets.RSS_URL }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+      - name: Commit last.txt
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add last.txt
+          git commit -m "update last seen tweet" || echo "no changes"
+          git push

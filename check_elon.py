@@ -107,13 +107,6 @@ def main():
         if link in processed_links:
             continue
 
-        
-        # 3. 更新 last.txt（一次性）
-        if new_links:
-            with open("last.txt", "a") as f:
-                for l in new_links:
-                    f.write(l + "\n")
-
         # 4. 组织内容
         content = f"{title}\n\n{summary}"
 
@@ -132,10 +125,15 @@ def main():
         send_telegram(msg)
         send_wecom(msg)
 
-        print("Sent successfully")
-        return  # 只处理一条
+        new_links.append(link)  # ✅ 关键
 
-    print("No 'Elon Musk' or 'Donald Trump' relevant news found")
+    if new_links:
+        with open("last.txt", "a") as f:
+            for l in new_links:
+                f.write(l + "\n")
+
+    if not new_links:
+        print("No 'Elon Musk' or 'Donald Trump' relevant news found")
 
 if __name__ == "__main__":
     main()

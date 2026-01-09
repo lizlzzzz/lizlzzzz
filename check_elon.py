@@ -47,12 +47,12 @@ def send_wecom(msg: str):
     })
     
 # ========= 读取link有哪些 =========
-        processed_links = set()
+processed_links = set()
 
-        if os.path.exists("last.txt"):
-            with open("last.txt") as f:
-                for line in f:
-                    processed_links.add(line.strip())
+if os.path.exists("last.txt"):
+    with open("last.txt") as f:
+        for line in f:
+            processed_links.add(line.strip())
 
 
 # ========= AI 分析 =========

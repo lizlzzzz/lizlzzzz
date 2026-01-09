@@ -3,16 +3,19 @@ import requests
 import os
 from openai import OpenAI
 
-
+# ========= 环境变量 =========
 RSS_URL = os.getenv("RSS_URL")
 BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 CHAT_ID = os.getenv("TG_CHAT_ID")
 WECOM_WEBHOOK = os.getenv("WECOM_WEBHOOK")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
+    api_key=OPENAI_API_KEY,
     base_url="https://api.deepseek.com"
 )
 
+# ========= 关键词 =========
 KEYWORDS = [
     "elon musk",
     "musk",
@@ -24,32 +27,36 @@ def is_relevant(title: str) -> bool:
     t = title.lower()
     return any(k in t for k in KEYWORDS)
 
-##telegram推送
-def send(msg):
+# ========= Telegram =========
+def send_telegram(msg: str):
+    if not BOT_TOKEN or not CHAT_ID:
+        return
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    requests.post(url, json={"chat_id": CHAT_ID, "text": msg})
+    requests.post(url, json={
+        "chat_id": CHAT_ID,
+        "text": msg
+    })
 
-##企业微信推送
-def send_wecom(msg):
+# ========= 企业微信 =========
+def send_wecom(msg: str):
     if not WECOM_WEBHOOK:
         return
     requests.post(WECOM_WEBHOOK, json={
         "msgtype": "text",
-        "text": {"content": msg}})
+        "text": {"content": msg}
+    })
+    
+# ========= 读取link有哪些 =========
+        processed_links = set()
 
-##记录分析过的link
-if os.path.exists("last.txt"):
-    with open("last.txt") as f:
-        last_link = f.read().strip()
-        if last_link == link:
-            print("Same tweet, skip")
-            exit(0)
+        if os.path.exists("last.txt"):
+            with open("last.txt") as f:
+                for line in f:
+                    processed_links.add(line.strip())
 
-with open("last.txt", "w") as f:
-    f.write(link)
 
-##AI prompt
-def analyze(tweet):
+# ========= AI 分析 =========
+def analyze(content: str) -> str:
     prompt = f"""
 System Prompt｜Fortune 新闻极速分析（中文）
 你是一个商业与科技新闻分析最强大脑，负责分析 Fortune 的英文新闻内容。
@@ -71,7 +78,7 @@ System Prompt｜Fortune 新闻极速分析（中文）
 不做预测、不扩展、不脑补
 
 新闻内容：
-{tweet}
+{content}
 """
 
     resp = client.chat.completions.create(
@@ -83,23 +90,40 @@ System Prompt｜Fortune 新闻极速分析（中文）
     )
 
     return resp.choices[0].message.content.strip()
-    
 
+# ========= 主逻辑 =========
+def main():
+    feed = feedparser.parse(RSS_URL)
+    new_links = []
 
-feed = feedparser.parse(RSS_URL)
-for entry in feed.entries:
-    title = entry.title
-    link = entry.link
-    description = entry.description
+    for entry in feed.entries:
+        title = entry.title
+        link = entry.link
+        summary = entry.summary
 
-    if not is_relevant(title):
-        continue  # 不相关，直接跳过
-content = f"{title}/n/n{description}"
+        # 1. 关键词过滤
+        if not is_relevant(title):
+            continue
 
-analysis = analyze(content)
+        # 2. 已处理过直接跳过
+        if link in processed_links:
+            continue
 
-msg = f"""
-【Fortune today】
+        
+        # 3. 更新 last.txt（一次性）
+        if new_links:
+            with open("last.txt", "a") as f:
+                for l in new_links:
+                    f.write(l + "\n")
+
+        # 4. 组织内容
+        content = f"{title}\n\n{summary}"
+
+        # 5. AI 分析
+        analysis = analyze(content)
+
+        msg = f"""
+【Fortune Today】
 {content}
 
 【AI 分析】
@@ -109,7 +133,15 @@ msg = f"""
 {link}
 """
 
+        # 6. 推送
+        send_telegram(msg)
+        send_wecom(msg)
 
-send(msg)
-send_wecom(msg)
+        print("Sent successfully")
+        return  # 只处理一条
+
+    print("No 'Elon Musk' or 'Donald Trump' relevant news found")
+
+if __name__ == "__main__":
+    main()
 

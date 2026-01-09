@@ -73,7 +73,7 @@ System Prompt｜Fortune 新闻极速分析（中文）
 区分哪些是客观事实，哪些是被引用人物的观点。
 
 约束：
-使用简体中文
+回答使用简体中文
 内容必须来自输入文本
 不做预测、不扩展、不脑补
 
@@ -124,7 +124,7 @@ def main():
 
         msg = f"""
 【Fortune Today】
-{content}
+{title}
 
 【AI 分析】
 {analysis}
